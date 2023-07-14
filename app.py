@@ -10,8 +10,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 st.set_option('deprecation.showPyplotGlobalUse', False)
 plt.style.use('ggplot')
-with open("config.json","r") as f:
-   config=json.load(f)
+with open("config.json", "r") as f:
+   config = json.load(f)
 
 cnx = mysql.connector.connect(
     host="localhost",
@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS entries (
 )
 """
 cursor.execute(create_table_query)
+
 
 def preprocess_sentence(tweet):
 
@@ -129,7 +130,7 @@ def preprocess_sentence(tweet):
     tweet = re.sub(r"donå«t", "do not", tweet)
 
     # Remove non-punctuation special characters excluding '!', '?'
-    tweet = re.sub(r'[^\w\s#@:;!?]|_', '', tweet)
+    tweet = re.sub(r'[^\w\s#@:;]|_', '', tweet)
 
     # Remove escape characters
     tweet = tweet.encode().decode('unicode_escape')
@@ -143,16 +144,18 @@ def preprocess_sentence(tweet):
     # Remove extra white spaces
     tweet = re.sub(r'\s+', ' ', tweet)
 
-
     return tweet
-def get_severity_score(proba):
-   severity_out_of_5=np.argmax(proba)
-   severity_score=0
-   for i in range(6):
-      severity_score+=i*proba[i]
 
-   return severity_out_of_5,severity_score
-# SQL BS
+
+def get_severity_score(proba):
+   severity_out_of_5 = np.argmax(proba)
+   severity_score = 0
+   for i in range(6):
+      severity_score += i*proba[i]
+
+   return severity_out_of_5, severity_score
+
+
 def insert_entry(comment, rough_score, evaluated_score):
     # Insert a new entry into the table
     insert_query = "INSERT INTO entries (comment, rough_score, evaluated_score) VALUES (%s, %s, %s)"
@@ -160,6 +163,8 @@ def insert_entry(comment, rough_score, evaluated_score):
     cursor.execute(insert_query, data)
     cnx.commit()
     print("Entry added successfully.")
+
+
 def view_entries(order_by):
     # Fetch entries from the table
     select_query = f"SELECT * FROM entries ORDER BY evaluated_score {order_by}"
@@ -173,43 +178,80 @@ def view_entries(order_by):
     # Display the DataFrame
     return df
 
+
 with open('model_pickle', 'rb') as f:
-  model=pickle.load(f) 
-with open('vectorizer.pkl','rb') as f:
-  vec=pickle.load(f)
+  model = pickle.load(f)
+with open('vectorizer.pkl', 'rb') as f:
+  vec = pickle.load(f)
 
 
 st.write("# Jigsaw Comments Severity Rating")
 st.write(" ML model capable of rating comments based on the Jigsaw-Rate Severity of Toxic Comments Kaggle competition dataset. This project harnesses the power of machine learning to tackle the critical issue of toxic comments, enabling effective comment rating and content moderation.")
-rad=st.sidebar.radio("Navigation",["Make Entry","Get Analytics"])
-if rad=="Make Entry":
-    comment = st.text_area("Enter the comment here for calculating its severity:")
+rad = st.sidebar.radio("Navigation", ["Make Entry", "Get Analytics"])
+if rad == "Make Entry":
+    comment = st.text_area(
+        "Enter the comment here for calculating its severity:")
     if comment:
-        preprocessed_comment=preprocess_sentence(comment)
-        vectorized_comment=vec.transform([preprocessed_comment])
-        proba=model.predict_proba(vectorized_comment)
-        rough_severity_score,total_score=get_severity_score(proba[0])
+        preprocessed_comment = preprocess_sentence(comment)
+        vectorized_comment = vec.transform([preprocessed_comment])
+        proba = model.predict_proba(vectorized_comment)
+        rough_severity_score, total_score = get_severity_score(proba[0])
         st.write("## The rough severity score out of 5 is:")
         st.write(rough_severity_score)
         st.write("## Total Score:")
         st.write(total_score)
         if st.button("Make Entry to Database?"):
-            insert_entry(comment,int(rough_severity_score),float(total_score))
-            df=view_entries("ASC")
+            insert_entry(comment, int(rough_severity_score),
+                         float(total_score))
+            df = view_entries("ASC")
             plt.hist(df["Evaluated Score"], bins=10, alpha=0.7)
             plt.xlabel("Evaluated Score")
             plt.ylabel("Frequency")
             plt.title("Histogram of Evaluated Scores")
-            plt.axvline(x=total_score, color="red", linestyle="--", label="Most Recent Entry")
+            plt.axvline(x=total_score, color="red",
+                        linestyle="--", label="Most Recent Entry")
             plt.legend()
             st.pyplot()
-            plt.hist(df["Rough Score"],orientation="horizontal")
-            plt.xlabel("Score out of 5")
-            plt.ylabel("Frequency")
-            plt.title("Histogram of Evaluated Scores")
-            plt.axhline(y=rough_severity_score, color="purple", linestyle="--", label="Most Recent")
+            plt.hist(df["Rough Score"], orientation="horizontal")
+            plt.xlabel("Frequency")
+            plt.ylabel("Score out of 5")
+            plt.title("Histogram of Scores out of 5")
+            plt.axhline(y=rough_severity_score, color="purple",
+                        linestyle="--", label="Most Recent")
             plt.legend()
             st.pyplot()
-if rad=="Get Analytics":
-   pass
+if rad == "Get Analytics":
+   choice = st.radio("View comments in: ", [
+                     "Ascending", "Descending"], index=1)
+   if choice == "Descending":
+      df = view_entries("DESC")
+   elif choice == "Ascending":
+      df = view_entries("ASC")
+   st.write("# Displaying Entries")
+   seeall = st.button("Click to see all entries")
+   if(seeall):
+      st.table(df)
+   else:
+      st.table(df.head())
+
+    
+   plt.hist(df["Evaluated Score"], bins=10, alpha=0.7)
+   plt.xlabel("Evaluated Score")
+   plt.ylabel("Frequency")
+   plt.title("Histogram of Evaluated Scores")
+   st.pyplot()
+   plt.hist(df["Rough Score"], orientation="horizontal")
+   plt.xlabel("Frequency")
+   plt.ylabel("Score out of 5")
+   plt.title("Histogram of Scores out of 5")
+   st.pyplot()
+
+   plt.pie(df["Rough Score"].value_counts(),labels=[i for i in range(max(df["Rough Score"])+1)],autopct="%6.2f")
+   plt.title("% Of records having a particular rough score")
+   st.pyplot()
+
+
+
+
+
 
