@@ -4,7 +4,7 @@ This project aims to create a machine learning model that rates the severity of 
 
 ## Features
 
-- Machine learning model: The ML model is trained on the Jigsaw competition dataset to accurately rate the severity of comments.
+- Machine learning model: The ML model is trained on the Jigsaw competition dataset to rate the severity of comments.
 - Web interface: A user-friendly web interface is provided to interact with the ML model. Users can input comments and receive the corresponding severity scores.
 - MySQL integration: The project enables storing user-entered comments and their calculated scores in a MySQL database for further analysis.
 - Analytical charts: Matplotlib and Pandas libraries are utilized to generate insightful charts based on the stored data, providing visual representations of comment severity trends.
@@ -26,7 +26,7 @@ pip install -r requirements.txt
 3. Set up the MySQL database:
 
 - Create a new MySQL database.
-- Update the database connection details in the `config.py` file.
+- Update your MySQL database connection details in a `config.json` file.
 
 4. Run the application:
 
