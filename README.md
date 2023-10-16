@@ -48,7 +48,7 @@ Contributions are welcome! If you'd like to contribute to this project, please f
 4. Test thoroughly.
 5. Commit your changes and push to your forked repository.
 6. Submit a pull request, describing your changes in detail.
-7. Changes can be made now in the Model Notebook folder for improving model accuracy
+7. Changes can be made now in the Model Notebook folder for improving model accuracy. You will need your own kaggle.json file for accessing Training Data. Validation Data can be found at: https://www.kaggle.com/competitions/jigsaw-toxic-severity-rating/data
 
 ## License
 
