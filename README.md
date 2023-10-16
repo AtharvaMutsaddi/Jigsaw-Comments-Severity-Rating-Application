@@ -14,7 +14,7 @@ This project aims to create a machine learning model that rates the severity of 
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/your-username/comment-rating-ml-model.git
+git clone https://github.com/AtharvaMutsaddi/Jigsaw-Comments-Severity-Rating-Application.git
 ```
 
 2. Install the required dependencies:
@@ -48,6 +48,7 @@ Contributions are welcome! If you'd like to contribute to this project, please f
 4. Test thoroughly.
 5. Commit your changes and push to your forked repository.
 6. Submit a pull request, describing your changes in detail.
+7. Changes can be made now in the Model Notebook folder for improving model accuracy
 
 ## License
 
